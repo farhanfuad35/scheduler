@@ -40,8 +40,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
-    'schedule'
+
+    'schedule',
+
+    'formtools',
+    'bootstrap_datepicker_plus',
+    'bootstrap4'
 ]
 
 MIDDLEWARE = [
@@ -84,6 +88,11 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# BOOTSTRAP4 = {
+#     'include_jquery': True,
+# }
+
 
 
 # Password validation
