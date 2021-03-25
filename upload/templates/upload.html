@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block page_body %}
+    <p>Upload excel file</p>
+    <form method="POST" action="" enctype="multipart/form-data">  {% csrf_token %}
+        {{form.as_p}}
+        <input type="submit">
+    </form>
+{% endblock %}

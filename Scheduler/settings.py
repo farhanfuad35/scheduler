@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'schedule',
+    'upload',
 
     'formtools',
     'bootstrap_datepicker_plus',
@@ -92,6 +93,9 @@ DATABASES = {
 # BOOTSTRAP4 = {
 #     'include_jquery': True,
 # }
+
+FILE_UPLOAD_HANDLERS = ("django_excel.ExcelMemoryFileUploadHandler",
+                        "django_excel.TemporaryExcelFileUploadHandler")
 
 
 

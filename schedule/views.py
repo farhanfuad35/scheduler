@@ -25,3 +25,5 @@ class ScheduleWizard(SessionWizardView):
     def done(self, form_list, **kwargs):
         # Do something with the form
         return HttpResponseRedirect('/')
+
+        
