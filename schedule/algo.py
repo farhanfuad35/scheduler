@@ -17,33 +17,36 @@ lockCourse = []
 def pickTeacher(dayInd, slotInd, course, teacherInd):
     print('Teacher', teacherInd)
 
-    if teacherInd == len(teachers):
-        return False
+    if teacherInd == len(course.courseTeachers):
+        return None
 
     # check if teacher can take class on this slotInd. True if yes, Flase if no
-    teacherKeys = list(teachers)
-    teacher = teachers[teacherKeys[teacherInd]]
+    teacher = course.courseTeachers[teacherInd]
     slot = SLOTS_PER_DAY[slotInd]
     courseFinish = slot + datetime.timedelta(hours=course.duration)
 
     if not teacher.available:
         print('T: Teacher Not Availble')
-        return pickTeacher(dayInd, slotInd, course, teacherInd+1)
+        if not course.isLabCourse:
+            return pickTeacher(dayInd, slotInd, course, teacherInd+1)
+        else:
+            return None
 
     for teacherSlot in teacher.teacherSlots[dayInd]:
         if teacherSlot[0] <= slot and teacherSlot[1]>=courseFinish:
-            lockTeacher[slotInd+1].append(teacher)
-            teacher.available = False
-            teacher.routine[dayInd][slotInd] = course
-            return True
+            return teacher
     
     print('T: Time didn\'t match', teacher.initial)
-    return pickTeacher(dayInd, slotInd, course, teacherInd+1)
+    if not course.isLabCourse:
+        return pickTeacher(dayInd, slotInd, course, teacherInd+1)
+    else:
+        return None
     
 
 def pickCourse(dayInd, slotInd, courseInd):
     # print('len', len(courses.keys()), 'done, week', course.doneClass, course.weeklyClass)
     # print('Is Lab', course.isLabCourse)
+    global lockTeacher
 
     if courseInd == len(courses.keys()):
         return pickSlot(dayInd, slotInd+1)
@@ -51,21 +54,42 @@ def pickCourse(dayInd, slotInd, courseInd):
     courseKeys = list(courses)
     course = courses[courseKeys[courseInd]]
 
-    def teacherFound():
+    def assignTeacher(teachersToBeAssigned):
+        for t in teachersToBeAssigned:
+            print(t)
+            if course.isLabCourse:
+                lockTeacher[slotInd+2].append(t)
+            else:
+                lockTeacher[slotInd+1].append(t)
+            t.available = False
+            t.routine[dayInd][slotInd] = course
+
+    def teacherFound(teachersToBeAssigned):
         global currentNumberOfClasses
         print('Found Teacher')
+
+        # assignTeacher
+        assignTeacher(teachersToBeAssigned)
+
+        # Lock the batch
         batch = generateBatchCode(course.id)
         batches[batch].available = False
+
+        # Lock the course
         course.doneClass = course.doneClass + 1
         course.available = False
         lockCourse.append(course)
+
+        # Handle Lab Course
         if course.isLabCourse:
             lockBatch[slotInd+2].append(batch)
         else:
             lockBatch[slotInd+1].append(batch)
+
+        # Increase counter of assigned classes
         currentNumberOfClasses = currentNumberOfClasses + 1
 
-        if pickSlot(dayInd, slotInd+1):
+        if pickCourse(dayInd, slotInd, courseInd+1):
             return True
         else:
             batches[batch].available = True
@@ -93,30 +117,43 @@ def pickCourse(dayInd, slotInd, courseInd):
 
     print('Course', course.id)
 
-    if course.doneClass == course.weeklyClass:
-        print('Weekly class done')
+    # If not possible, continue
+    if course.doneClass == course.weeklyClass or \
+        not batches[generateBatchCode(course.id)].available or \
+            not course.available:
         return pickCourse(dayInd, slotInd, courseInd+1)
-    # print('Course Availability', course.available)
-    if not batches[generateBatchCode(course.id)].available or not course.available:
-        print('Not Available', batches[generateBatchCode(course.id)].available, course.available)
-        return pickCourse(dayInd, slotInd, courseInd+1)
+    
+    # if not batches[generateBatchCode(course.id)].available or not course.available:
+    #     # print('Not Available', batches[generateBatchCode(course.id)].available, course.available)
+    #     return pickCourse(dayInd, slotInd, courseInd+1)
+
+    # If lab course, assign multiple teachers together if needed
+
+    teachersToBeAssignedTest = []
 
     if course.isLabCourse:
         possible = True
         
         for i in range(len(course.courseTeachers)):
-            possible = possible and pickTeacher(dayInd, slotInd, course, i)
+            teacher = pickTeacher(dayInd, slotInd, course, i)
+            if teacher != None:
+                teachersToBeAssignedTest.append(teacher)
+            else:
+                possible = False
+                break
         
         if possible:
-            teacherFound()
+            teacherFound(teachersToBeAssignedTest)
         else:
             return pickCourse(dayInd, slotInd, courseInd+1)
     else:
-        if not pickTeacher(dayInd, slotInd, course, 0):
+        teacher =  pickTeacher(dayInd, slotInd, course, 0)
+        if teacher == None:
             print('Cannot Pick Teacher')
             return pickCourse(dayInd, slotInd, courseInd+1)
         else:
-            teacherFound()
+            teachersToBeAssignedTest.append(teacher)
+            teacherFound(teachersToBeAssignedTest)
 
             
 

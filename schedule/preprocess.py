@@ -24,24 +24,22 @@ class Teacher:
 
         for i in range(5):
             self.routine.append([None, None, None, None, None])
-        
-        # for i in range(0, 5):
-        #     slots = []
 
-            # for t in SLOTS_PER_DAY:
-            #     available = False
-            #     for s in teacherSlots[i]:
-            #         if t >= s[0] and t <= s[1]:
-            #             available = True
-            #             break
-            #     slots.append(available)
+    def __str__(self):
+        return self.initial
 
-            # self.days.append(slots)
+    # def __lt__(self, other):
+    #     now = datetime.datetime.now()
+    #     tm1 = now
+    #     tm2 = now
+    #     for day in self.teacherSlots:
+    #         for slot in day:
+    #             tm1 = tm1 + (slot[1]-slot[0])
+    #     for day in other.teacherSlots:
+    #         for slot in day:
+    #             tm2 = tm2 + (slot[1]-slot[0])
         
-        # for i in range(0, 5):
-        #     print(i, ' ---------- ', len(self.days[i]))
-        #     for item in self.days[i]:
-        #         print(item)
+    #     return tm1 < tm2
 
 
 class Batch:
@@ -103,6 +101,7 @@ def schedule(book):
         )
 
     preProcess(book)
+    applyHeuristics()
 
     return runAlgo(batches, courses, teachers, SLOTS_PER_DAY, numberOfClasses())
     # Test
@@ -210,3 +209,9 @@ def getTeacherCourses(book, initial):
             break
 
     return teacherCourses
+
+
+def applyHeuristics():
+    global teachers
+    print(teachers)
+    # teachers = sorted(teachers)
