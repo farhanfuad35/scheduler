@@ -7,12 +7,14 @@ import datetime
 import django_excel as excel
 from .algo import runAlgo
 
-SLOTS_PER_DAY = []
 NUMBER_OF_SLOTS = 5
-
-batches = {}
-teachers = {}
-courses = {}
+SLOTS_PER_DAY = (
+        datetime.datetime.strptime('08:30 AM', '%I:%M %p'),
+        datetime.datetime.strptime('10:00 AM', '%I:%M %p'),
+        datetime.datetime.strptime('11:30 AM', '%I:%M %p'),
+        datetime.datetime.strptime('02:00 PM', '%I:%M %p'),
+        datetime.datetime.strptime('03:30 PM', '%I:%M %p')
+    )
 
 class Teacher:
     def __init__(self, initial, teacherSlots, courses):
@@ -87,24 +89,10 @@ class Course:
         
 
 def schedule(book):
-    global SLOTS_PER_DAY
-    global NUMBER_OF_SLOTS
-    global teachers
-    global courses
+    teachersList = {}
+    coursesList = {}
+    batchesList = {}
 
-    NUMBER_OF_SLOTS = 5
-    SLOTS_PER_DAY = (
-            datetime.datetime.strptime('08:30 AM', '%I:%M %p'),
-            datetime.datetime.strptime('10:00 AM', '%I:%M %p'),
-            datetime.datetime.strptime('11:30 AM', '%I:%M %p'),
-            datetime.datetime.strptime('02:00 PM', '%I:%M %p'),
-            datetime.datetime.strptime('03:30 PM', '%I:%M %p')
-        )
-
-    preProcess(book)
-    applyHeuristics()
-
-    return runAlgo(batches, courses, teachers, SLOTS_PER_DAY, numberOfClasses())
     # Test
     # for key in batches.keys():
     #     print(batches[key].id)
@@ -127,92 +115,95 @@ def schedule(book):
 
 # Convert excel to python objects
 
-def preProcess(book):
-    timetable = book[2].get_array()
-    timetable.pop(0)
-    global teachers
-    for rec in timetable:
-        initial = rec[0]
-        teacherSlots = []
-        teacherSlots.append(convertToTime(rec[2]))
-        teacherSlots.append(convertToTime(rec[3]))
-        teacherSlots.append(convertToTime(rec[4]))
-        teacherSlots.append(convertToTime(rec[5]))
-        teacherSlots.append(convertToTime(rec[6]))
+    def preProcess(book):
+        timetable = book[2].get_array()
+        timetable.pop(0)
+        for rec in timetable:
+            initial = rec[0]
+            teacherSlots = []
+            teacherSlots.append(convertToTime(rec[2]))
+            teacherSlots.append(convertToTime(rec[3]))
+            teacherSlots.append(convertToTime(rec[4]))
+            teacherSlots.append(convertToTime(rec[5]))
+            teacherSlots.append(convertToTime(rec[6]))
 
-        courses = getTeacherCourses(book, initial)
-        teacher = Teacher(initial, teacherSlots, courses)
+            courses = getTeacherCourses(book, initial)
+            teacher = Teacher(initial, teacherSlots, courses)
 
-        setCourseTeacher(teacher)
+            setCourseTeacher(teacher)
 
-        teachers[initial] = teacher
+            teachersList[initial] = teacher
 
-def setCourseTeacher(teacher):
-    for course in teacher.courses:
-        courses[course].courseTeachers.append(teacher)
+    def setCourseTeacher(teacher):
+        for course in teacher.courses:
+            coursesList[course].courseTeachers.append(teacher)
 
-def numberOfClasses():
-    n=0
-    for key in courses.keys():
-        n = n + courses[key].weeklyClass
-    return n
+    def numberOfClasses():
+        n=0
+        for key in coursesList.keys():
+            n = n + coursesList[key].weeklyClass
+        return n
 
-def convertToTime(str):
-    timeStrArr = str.split(';')
-    ret = []
-    for t in timeStrArr:
-        try:
-            startTime = t.split('-')[0]
-            startTime = datetime.datetime.strptime(startTime, '%I:%M%p')
-            endTime = t.split('-')[1]
-            endTime = datetime.datetime.strptime(endTime, '%I:%M%p')
-            ret.append([startTime, endTime])
-        except ValueError:
-            return ret
-    
-    return ret
+    def convertToTime(str):
+        timeStrArr = str.split(';')
+        ret = []
+        for t in timeStrArr:
+            try:
+                startTime = t.split('-')[0]
+                startTime = datetime.datetime.strptime(startTime, '%I:%M%p')
+                endTime = t.split('-')[1]
+                endTime = datetime.datetime.strptime(endTime, '%I:%M%p')
+                ret.append([startTime, endTime])
+            except ValueError:
+                return ret
+        
+        return ret
 
-# Convert courses to id. CSE 3201 would be converted into 320 (3: Year, 2: Semester, 0: No Section)
-# CSE 3102 Section 2 would be converted into 312 (3: Year, 1: Semester, 2: Section)
+    # Convert courses to id. CSE 3201 would be converted into 320 (3: Year, 2: Semester, 0: No Section)
+    # CSE 3102 Section 2 would be converted into 312 (3: Year, 1: Semester, 2: Section)
 
-# This method also generates batch array and courses array while reading courses from the excel
+    # This method also generates batch array and courses array while reading courses from the excel
 
-def getTeacherCourses(book, initial):
-    global batches
-    global courses
+    def getTeacherCourses(book, initial):
 
-    sheet = book[1].get_array()
-    teacherCourses = []
-    for row in sheet:
-        if row[0] == initial:
-            for i in range(1, len(row)):
-                if row[i] != '':
-                    splittedCourseName = row[i].split(' Section ')
-                    
-                    courseID = int(splittedCourseName[0][-4:])
+        sheet = book[1].get_array()
+        teacherCourses = []
+        for row in sheet:
+            if row[0] == initial:
+                for i in range(1, len(row)):
+                    if row[i] != '':
+                        splittedCourseName = row[i].split(' Section ')
+                        
+                        courseID = int(splittedCourseName[0][-4:])
 
-                    batchID = int(courseID/100)
-                    if len(splittedCourseName) > 1:
-                        courseID = courseID *10 + int(splittedCourseName[1])
-                        batchID = batchID*10 + int(splittedCourseName[1])
-                    else:
-                        courseID = courseID * 10
-                        batchID = batchID * 10
+                        batchID = int(courseID/100)
+                        if len(splittedCourseName) > 1:
+                            courseID = courseID *10 + int(splittedCourseName[1])
+                            batchID = batchID*10 + int(splittedCourseName[1])
+                        else:
+                            courseID = courseID * 10
+                            batchID = batchID * 10
 
-                    teacherCourses.append(courseID)
+                        teacherCourses.append(courseID)
 
-                    # If you want to change course credit, do it here. Default is all 3
-                    if courseID not in courses.keys():
-                        courses[courseID] = Course(courseID, row[i], 3)
+                        # If you want to change course credit, do it here. Default is all 3
+                        if courseID not in coursesList.keys():
+                            coursesList[courseID] = Course(courseID, row[i], 3)
 
-                    if batchID not in batches.keys():
-                        batches[batchID] = Batch(batchID)
-            break
+                        if batchID not in batchesList.keys():
+                            batchesList[batchID] = Batch(batchID)
+                break
 
-    return teacherCourses
+        return teacherCourses
 
 
-def applyHeuristics():
-    global teachers
-    print(teachers)
-    # teachers = sorted(teachers)
+    # def applyHeuristics():
+    #     global teachers
+    #     print(teachers)
+        # teachers = sorted(teachers)
+
+
+    preProcess(book)
+    # applyHeuristics()
+
+    return runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, numberOfClasses())
