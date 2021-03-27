@@ -1,46 +1,45 @@
 {% extends 'base.html' %}
 
 {% block page_body %}
-    {% for t in teachers %}
-        <p>Class routine: {{t.initial}}</p>
-        <table>
+    {% for key, t in teachers.items %}
+        <h4 class="pt-3 pb-3 text-center">Class routine: {{t.name}} ({{ t.initial }})</h4>
+        <table class="table table-bordered col-md-6 mx-auto" >
             <tr>
-                <td>Day</td>
-                <td>8.30 AM</td>
-                <td>10:00 AM</td>
-                <td>11:30 AM</td>
-                <td>2:00 PM</td>
-                <td>3:30 PM</td>
+                <th scope="col" class="text-center">Day</th>
+                <th scope="col" class="text-center">8.30 AM</th>
+                <th scope="col" class="text-center">10:00 AM</th>
+                <th scope="col" class="text-center">11:30 AM</th>
+                <th scope="col" class="text-center">2:00 PM</th>
+                <th scope="col" class="text-center">3:30 PM</th>
             </tr>
             <tr>
-                <td>Sunday</td>
+                <th scope="row">Sunday</th>
                 {% for course in t.routine.0 %}
-                    <td>{{course.name}}</td>
+                    <td class="text-center">{{course.name}}</td>
                 {% endfor %}
             </tr>
             <tr>
-                <td>Monday</td>
-                <td>{{t.routine.0.0}}
-                {% comment %} {% for course in t.routine.1 %}
-                    <td>{{course.name}}</td>
-                {% endfor %} {% endcomment %}
+                <th scope="row">Monday</th>
+                {% for course in t.routine.1 %}
+                    <td class="text-center">{{course.name}}</td>
+                {% endfor %}
             </tr>
             <tr>
-                <td>Tuesday</td>
+                <th scope="row">Tuesday</th>
                 {% for course in t.routine.2 %}
-                    <td>{{course.name}}</td>
+                    <td class="text-center">{{course.name}}</td>
                 {% endfor %}
             </tr>
             <tr>
-                <td>Wednesday</td>
+                <th scope="row">Wednesday</th>
                 {% for course in t.routine.3 %}
-                    <td>{{course.name}}</td>
+                    <td class="text-center">{{course.name}}</td>
                 {% endfor %}
             </tr>
             <tr>
-                <td>Thursday</td>
+                <th scope="row">Thursday</th>
                 {% for course in t.routine.4 %}
-                    <td>{{course.name}}</td>
+                    <td class="text-center">{{course.name}}</td>
                 {% endfor %}
             </tr>
 

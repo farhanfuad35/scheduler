@@ -19,6 +19,7 @@ SLOTS_PER_DAY = (
 class Teacher:
     def __init__(self, initial, teacherSlots, courses):
         self.initial = initial
+        self.name = None
         self.available = True
         self.courses = courses          # These are all course keys, not actual course
         self.routine = []
@@ -202,8 +203,15 @@ def schedule(book):
     #     print(teachers)
         # teachers = sorted(teachers)
 
+    def setTeacherNames(book):
+        sheet = book[0].get_array()
+        for row in sheet:
+            if row[0] in teachersList.keys():
+                teachersList[row[0]].name = row[1]
+
 
     preProcess(book)
+    setTeacherNames(book)
     # applyHeuristics()
 
     return runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, numberOfClasses())
