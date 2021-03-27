@@ -31,7 +31,6 @@ def pickTeacher(dayInd, slotInd, course, teacherInd):
         return pickTeacher(dayInd, slotInd, course, teacherInd+1)
 
     for teacherSlot in teacher.teacherSlots[dayInd]:
-        print('T: ', teacherSlot[0], teacherSlot[1], slot, courseFinish)
         if teacherSlot[0] <= slot and teacherSlot[1]>=courseFinish:
             lockTeacher[slotInd+1].append(teacher)
             teacher.available = False
@@ -43,8 +42,6 @@ def pickTeacher(dayInd, slotInd, course, teacherInd):
     
 
 def pickCourse(dayInd, slotInd, courseInd):
-    global currentNumberOfClasses
-
     # print('len', len(courses.keys()), 'done, week', course.doneClass, course.weeklyClass)
     # print('Is Lab', course.isLabCourse)
 
@@ -54,19 +51,8 @@ def pickCourse(dayInd, slotInd, courseInd):
     courseKeys = list(courses)
     course = courses[courseKeys[courseInd]]
 
-    print('Course', course.id)
-
-    if course.doneClass == course.weeklyClass:
-        print('Weekly class done')
-        return pickCourse(dayInd, slotInd, courseInd+1)
-    # print('Course Availability', course.available)
-    if not batches[generateBatchCode(course.id)].available or not course.available:
-        print('Not Available', batches[generateBatchCode(course.id)].available, course.available)
-        return pickCourse(dayInd, slotInd, courseInd+1)
-    if not pickTeacher(dayInd, slotInd, course, 0):
-        print('Cannot Pick Teacher')
-        return pickCourse(dayInd, slotInd, courseInd+1)
-    else:
+    def teacherFound():
+        global currentNumberOfClasses
         print('Found Teacher')
         batch = generateBatchCode(course.id)
         batches[batch].available = False
@@ -103,10 +89,40 @@ def pickCourse(dayInd, slotInd, courseInd):
                 
             
             return False
+
+
+    print('Course', course.id)
+
+    if course.doneClass == course.weeklyClass:
+        print('Weekly class done')
+        return pickCourse(dayInd, slotInd, courseInd+1)
+    # print('Course Availability', course.available)
+    if not batches[generateBatchCode(course.id)].available or not course.available:
+        print('Not Available', batches[generateBatchCode(course.id)].available, course.available)
+        return pickCourse(dayInd, slotInd, courseInd+1)
+
+    if course.isLabCourse:
+        possible = True
+        
+        for i in range(len(course.courseTeachers)):
+            possible = possible and pickTeacher(dayInd, slotInd, course, i)
+        
+        if possible:
+            teacherFound()
+        else:
+            return pickCourse(dayInd, slotInd, courseInd+1)
+    else:
+        if not pickTeacher(dayInd, slotInd, course, 0):
+            print('Cannot Pick Teacher')
+            return pickCourse(dayInd, slotInd, courseInd+1)
+        else:
+            teacherFound()
+
             
 
 def pickSlot(dayInd, slotInd):
     print('Slot', slotInd)
+    global currentNumberOfClasses
 
 
     if currentNumberOfClasses == NUMBER_OF_CLASSES:

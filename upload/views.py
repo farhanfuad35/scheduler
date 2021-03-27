@@ -33,7 +33,10 @@ def printRoutine(teachers):
         for i in range(5):
             for j in range(5):
                 if teacher.routine[i][j] is None:
-                    print('*', end=' ')
+                    print('*', end=' | ')
                 else:
-                    print(int(teacher.routine[i][j].id/10), '(' + teacher.initial + ')', end=' ')
+                    section = ''
+                    if teacher.routine[i][j].isLabCourse:
+                        section = 'Section ' + str(int(teacher.routine[i][j].id%10))
+                    print(int(teacher.routine[i][j].id/10), section, '(' + teacher.initial + ')', end=' | ')
             print('\n--------------')
