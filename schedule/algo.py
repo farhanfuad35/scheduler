@@ -46,6 +46,7 @@ def pickTeacher(dayInd, slotInd, course, teacherInd):
 def pickCourse(dayInd, slotInd, courseInd):
     # print('len', len(courses.keys()), 'done, week', course.doneClass, course.weeklyClass)
     # print('Is Lab', course.isLabCourse)
+
     global lockTeacher
 
     if courseInd == len(courses.keys()):
@@ -54,9 +55,11 @@ def pickCourse(dayInd, slotInd, courseInd):
     courseKeys = list(courses)
     course = courses[courseKeys[courseInd]]
 
+    print('Course', course.id)
+
     def assignTeacher(teachersToBeAssigned):
         for t in teachersToBeAssigned:
-            print(t)
+            print('Assinging Teacher: ', t)
             if course.isLabCourse:
                 lockTeacher[slotInd+2].append(t)
             else:
@@ -115,8 +118,6 @@ def pickCourse(dayInd, slotInd, courseInd):
             return False
 
 
-    print('Course', course.id)
-
     # If not possible, continue
     if course.doneClass == course.weeklyClass or \
         not batches[generateBatchCode(course.id)].available or \
@@ -163,6 +164,9 @@ def pickSlot(dayInd, slotInd):
 
 
     if currentNumberOfClasses == NUMBER_OF_CLASSES:
+        # DEBUG
+        print('Beacuse of this?')
+
         return True
 
     if slotInd == 5:
@@ -200,6 +204,7 @@ def runAlgo(b, c, t, spd, noc):
     global teachers
     global SLOTS_PER_DAY
     global NUMBER_OF_CLASSES
+    global currentNumberOfClasses
 
     init()
 
@@ -208,13 +213,23 @@ def runAlgo(b, c, t, spd, noc):
     teachers = t
     SLOTS_PER_DAY = spd
     NUMBER_OF_CLASSES = noc
+    currentNumberOfClasses = 0
+    unlockAll()
+
+    # DEBUG
+    print('noc:', NUMBER_OF_CLASSES)
+    print('Current noc', currentNumberOfClasses)
 
     if pickDay(0):
         print('It Worked!')
     else:
         print('Sorry no valid combination found!')
 
-    return teachers
+
+    # DEBUG
+    print(teachers['MMR'].routine[0])
+
+    return teachers, courses
 
 def init():
     for i in range(5):

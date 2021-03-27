@@ -18,7 +18,7 @@ class Teacher:
     def __init__(self, initial, teacherSlots, courses):
         self.initial = initial
         self.available = True
-        self.courses = courses
+        self.courses = courses          # These are all course keys, not actual course
         self.routine = []
         self.teacherSlots = teacherSlots              # An array containing an array of Times. teacherSlots[1][0] = startTime, [1][1] = endTime of the 2nd (1) slot
 
@@ -55,8 +55,9 @@ class Batch:
             self.free.append(slots)
         
 class Course:
-    def __init__(self, id, credit):
+    def __init__(self, id, name, credit):
         self.id = id
+        self.name = name
         self.credit = credit
         self.duration = 1.5
         self.doneClass = 0
@@ -202,7 +203,7 @@ def getTeacherCourses(book, initial):
 
                     # If you want to change course credit, do it here. Default is all 3
                     if courseID not in courses.keys():
-                        courses[courseID] = Course(courseID, 3)
+                        courses[courseID] = Course(courseID, row[i], 3)
 
                     if batchID not in batches.keys():
                         batches[batchID] = Batch(batchID)

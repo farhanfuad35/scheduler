@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block page_body %}
+    {% for t in teachers %}
+        <p>Class routine: {{t.initial}}</p>
+        <table>
+            <tr>
+                <td>Day</td>
+                <td>8.30 AM</td>
+                <td>10:00 AM</td>
+                <td>11:30 AM</td>
+                <td>2:00 PM</td>
+                <td>3:30 PM</td>
+            </tr>
+            <tr>
+                <td>Sunday</td>
+                {% for course in t.routine.0 %}
+                    <td>{{course.name}}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td>Monday</td>
+                <td>{{t.routine.0.0}}
+                {% comment %} {% for course in t.routine.1 %}
+                    <td>{{course.name}}</td>
+                {% endfor %} {% endcomment %}
+            </tr>
+            <tr>
+                <td>Tuesday</td>
+                {% for course in t.routine.2 %}
+                    <td>{{course.name}}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td>Wednesday</td>
+                {% for course in t.routine.3 %}
+                    <td>{{course.name}}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td>Thursday</td>
+                {% for course in t.routine.4 %}
+                    <td>{{course.name}}</td>
+                {% endfor %}
+            </tr>
+
+        </table>
+    {% endfor %}
+{% endblock %}
