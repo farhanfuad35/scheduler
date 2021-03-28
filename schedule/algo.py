@@ -8,6 +8,12 @@ import datetime
 # Parent Function
 def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLASSES):
     # Initialize all necessary fields
+    # CONSTANTS
+    MEMO = []
+
+    # Keeps track of current routine state to avoid unnecessary duplicate recursion
+    currentRoutineState = ''
+
     finalRoutine = []
     lockTeacher = [[], [], [], [], [], []]
     lockBatch = [[], [], [], [], [], []]        # For each slot of the day
@@ -71,6 +77,7 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
             print('Found Teacher')
 
             nonlocal currentNumberOfClasses
+            nonlocal currentRoutineState
 
             # assignTeacher
             assignTeacher(teachersToBeAssigned)
@@ -93,8 +100,15 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
             # Increase counter of assigned classes
             currentNumberOfClasses = currentNumberOfClasses + 1
 
+            # Update Current Routine State
+            adderString = str(dayInd) + str(slotInd) + str(courseInd)
+            currentRoutineState = currentRoutineState + adderString
+
+            # Return True if it works
             if pickCourse(dayInd, slotInd, courseInd+1):
                 return True
+
+            # Undo everything here if this assignment doesn't workout            
             else:
                 batchesList[batch].available = True
                 course.available = True
@@ -104,6 +118,10 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
                     pass
                 course.doneClass = course.doneClass - 1
                 currentNumberOfClasses = currentNumberOfClasses - 1
+
+                # Undo currentRoutineState String
+                currentRoutineState = currentRoutineState[:-len(adderString)]
+
                 if course.isLabCourse:
                     try:
                         lockBatch[slotInd+2].remove(batch)
@@ -156,12 +174,9 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
                 
 
     def pickSlot(dayInd, slotInd):
-        print('Slot', slotInd)
+        print('DayInd = {}, Slot = {}'.format(dayInd, slotInd))
 
         if currentNumberOfClasses == NUMBER_OF_CLASSES:
-            # DEBUG
-            print('Beacuse of this?')
-
             return True
 
         if slotInd == 5:
@@ -176,16 +191,35 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
             return True
 
     def pickDay(dayInd):
-        print('Day', dayInd, currentNumberOfClasses)
+        key = currentRoutineState + str(dayInd)
+        print('Day', dayInd)
         unlockAll()
 
         if dayInd == 5:
+            print('No Day found. Returning False')
             return False
         
-        if not pickSlot(dayInd, 0):
-            return pickDay(dayInd+1)
+        if key not in MEMO:
+            result = pickSlot(dayInd, 0)
+            MEMO.append(key)
+            if result is False:
+                return pickDay(dayInd+1)
+            else:
+                return True
+
+        # It is assumed that the ouput is just a single valid routine.
+        # Thus, just the info if this combination has already been checked
+        # before is saved. If the unique string is found in the MEMO list,
+        # it means, this combination has been checked before and implies
+        # a valid routine was not found. But if all possible valid routines
+        # are expected, then the unique string should be saved along with it's
+        # result (True/False) in a MEMO dictionary. Change this line in all
+        # pick methods
+
         else:
-            return True
+            return False
+
+        
 
     def init(finalRoutine):
         for i in range(5):
@@ -214,9 +248,10 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
     # Function calls
 
     init(finalRoutine)
+    
     if pickDay(0):
-        print('It Worked!')
+        valid = True
     else:
-        print('Sorry no valid combination found!')
+        valid = False
 
-    return teachersList, coursesList
+    return teachersList, valid

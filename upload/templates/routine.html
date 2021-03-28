@@ -1,6 +1,12 @@
 {% extends 'base.html' %}
 
 {% block page_body %}
+    {% if valid %}
+        <h3 class="pt-3 text-center"><b>A valid combination found for the given constraints!</b></h3>
+    {% else %}
+        <h3 class="pt-3 text-center"><b>Sorry, no valid combination found for the given constraints</b></h3>
+    {% endif %}
+
     {% for key, t in teachers.items %}
         <h4 class="pt-3 pb-3 text-center">Class routine: {{t.name}} ({{ t.initial }})</h4>
         <table class="table table-bordered col-md-6 mx-auto" >

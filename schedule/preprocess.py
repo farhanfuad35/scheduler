@@ -94,26 +94,6 @@ def schedule(book):
     coursesList = {}
     batchesList = {}
 
-    # Test
-    # for key in batches.keys():
-    #     print(batches[key].id)
-
-    # print('----------------')
-
-    # for teacher in teachers:
-    #     print('-- New Teacher --')
-    #     for course in teacher.courses:
-    #         print(course)
-
-    # for key in courses.keys():
-    #     print(courses[key])
-
-    # for key in courses.keys():
-    #     print(courses[key].id)
-    #     for teacher in courses[key].courseTeachers:
-    #         print(teacher.initial)
-
-
 # Convert excel to python objects
 
     def preProcess(book):
