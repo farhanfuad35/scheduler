@@ -3,52 +3,55 @@
 {% block page_body %}
     {% if valid %}
         <h3 class="pt-3 text-center"><b>A valid combination found for the given constraints!</b></h3>
+
+        {% for key, t in teachers.items %}
+            <h4 class="pt-3 pb-3 text-center">Class routine: {{t.name}} ({{ t.initial }})</h4>
+            <table class="table table-bordered col-md-6 mx-auto" >
+                <tr>
+                    <th scope="col" class="text-center">Day</th>
+                    <th scope="col" class="text-center">8.30 AM</th>
+                    <th scope="col" class="text-center">10:00 AM</th>
+                    <th scope="col" class="text-center">11:30 AM</th>
+                    <th scope="col" class="text-center">2:00 PM</th>
+                    <th scope="col" class="text-center">3:30 PM</th>
+                </tr>
+                <tr>
+                    <th scope="row">Sunday</th>
+                    {% for course in t.routine.0 %}
+                        <td class="text-center">{{course.name}}</td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th scope="row">Monday</th>
+                    {% for course in t.routine.1 %}
+                        <td class="text-center">{{course.name}}</td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th scope="row">Tuesday</th>
+                    {% for course in t.routine.2 %}
+                        <td class="text-center">{{course.name}}</td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th scope="row">Wednesday</th>
+                    {% for course in t.routine.3 %}
+                        <td class="text-center">{{course.name}}</td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th scope="row">Thursday</th>
+                    {% for course in t.routine.4 %}
+                        <td class="text-center">{{course.name}}</td>
+                    {% endfor %}
+                </tr>
+
+            </table>
+        {% endfor %}
+    
     {% else %}
-        <h3 class="pt-3 text-center"><b>Sorry, no valid combination found for the given constraints</b></h3>
+        <h2 class="pt-3 text-center"><b>Sorry, no valid combination found for the given constraints</b></h3>
     {% endif %}
 
-    {% for key, t in teachers.items %}
-        <h4 class="pt-3 pb-3 text-center">Class routine: {{t.name}} ({{ t.initial }})</h4>
-        <table class="table table-bordered col-md-6 mx-auto" >
-            <tr>
-                <th scope="col" class="text-center">Day</th>
-                <th scope="col" class="text-center">8.30 AM</th>
-                <th scope="col" class="text-center">10:00 AM</th>
-                <th scope="col" class="text-center">11:30 AM</th>
-                <th scope="col" class="text-center">2:00 PM</th>
-                <th scope="col" class="text-center">3:30 PM</th>
-            </tr>
-            <tr>
-                <th scope="row">Sunday</th>
-                {% for course in t.routine.0 %}
-                    <td class="text-center">{{course.name}}</td>
-                {% endfor %}
-            </tr>
-            <tr>
-                <th scope="row">Monday</th>
-                {% for course in t.routine.1 %}
-                    <td class="text-center">{{course.name}}</td>
-                {% endfor %}
-            </tr>
-            <tr>
-                <th scope="row">Tuesday</th>
-                {% for course in t.routine.2 %}
-                    <td class="text-center">{{course.name}}</td>
-                {% endfor %}
-            </tr>
-            <tr>
-                <th scope="row">Wednesday</th>
-                {% for course in t.routine.3 %}
-                    <td class="text-center">{{course.name}}</td>
-                {% endfor %}
-            </tr>
-            <tr>
-                <th scope="row">Thursday</th>
-                {% for course in t.routine.4 %}
-                    <td class="text-center">{{course.name}}</td>
-                {% endfor %}
-            </tr>
-
-        </table>
-    {% endfor %}
+    
 {% endblock %}

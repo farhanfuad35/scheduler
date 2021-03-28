@@ -10,6 +10,8 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
     # Initialize all necessary fields
     # CONSTANTS
     MEMO = []
+    CLASS_START = datetime.datetime.strptime('08:30 AM', '%I:%M %p')
+    CLASS_END = datetime.datetime.strptime('05:00 PM', '%I:%M %p')
 
     # Keeps track of current routine state to avoid unnecessary duplicate recursion
     currentRoutineState = ''
@@ -24,6 +26,7 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
 
     def pickTeacher(dayInd, slotInd, course, teacherInd):
         print('Teacher', teacherInd)
+        nonlocal CLASS_END
 
         if teacherInd == len(course.courseTeachers):
             return None
@@ -33,28 +36,27 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
         slot = SLOTS_PER_DAY[slotInd]
         courseFinish = slot + datetime.timedelta(hours=course.duration)
 
-        if not teacher.available:
-            print('T: Teacher Not Availble')
+        def proceed():
+            # DEBUG
+            print('Proceeding')
+
             if not course.isLabCourse:
                 return pickTeacher(dayInd, slotInd, course, teacherInd+1)
             else:
                 return None
 
+        if not teacher.available or courseFinish > CLASS_END:
+            return proceed()
+
         for teacherSlot in teacher.teacherSlots[dayInd]:
             if teacherSlot[0] <= slot and teacherSlot[1]>=courseFinish:
+                print('Returning', teacher.initial)
                 return teacher
-        
-        print('T: Time didn\'t match', teacher.initial)
-        if not course.isLabCourse:
-            return pickTeacher(dayInd, slotInd, course, teacherInd+1)
-        else:
-            return None
+
+        return proceed()
         
 
     def pickCourse(dayInd, slotInd, courseInd):
-        # print('len', len(batchesList.keys()), 'done, week', course.doneClass, course.weeklyClass)
-        # print('Is Lab', course.isLabCourse)
-
         if courseInd == len(coursesList.keys()):
             return pickSlot(dayInd, slotInd+1)
 
@@ -64,14 +66,33 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
         print('Course', course.id)
 
         def assignTeacher(teachersToBeAssigned):
+            # Update the routine
+
             for t in teachersToBeAssigned:
-                print('Assinging Teacher: ', t)
+                print('Found Teacher:', t.initial)
                 if course.isLabCourse:
                     lockTeacher[slotInd+2].append(t)
                 else:
                     lockTeacher[slotInd+1].append(t)
                 t.available = False
                 t.routine[dayInd][slotInd] = course
+
+        def unAssignTeacher(teachersToBeUnassigned):
+            
+
+            for t in teachersToBeUnassigned:
+                print('Unassigning: day, slot, course, teacher', dayInd, slotInd, course.id, t.initial)
+                try:
+                    if course.isLabCourse:
+                        lockTeacher[slotInd+2].remove(t)
+                    else:
+                        lockTeacher[slotInd+1].remove(t)
+                except:
+                    pass
+                t.available = True
+                t.routine[dayInd][slotInd] = None
+
+
 
         def teacherFound(teachersToBeAssigned):
             print('Found Teacher')
@@ -112,6 +133,7 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
             else:
                 batchesList[batch].available = True
                 course.available = True
+                unAssignTeacher(teachersToBeAssigned)
                 try:
                     lockCourse.remove(course)
                 except:
@@ -159,17 +181,16 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
                     break
             
             if possible:
-                teacherFound(teachersToBeAssignedTest)
+                return teacherFound(teachersToBeAssignedTest)
             else:
                 return pickCourse(dayInd, slotInd, courseInd+1)
         else:
             teacher =  pickTeacher(dayInd, slotInd, course, 0)
             if teacher == None:
-                print('Cannot Pick Teacher')
                 return pickCourse(dayInd, slotInd, courseInd+1)
             else:
                 teachersToBeAssignedTest.append(teacher)
-                teacherFound(teachersToBeAssignedTest)
+                return teacherFound(teachersToBeAssignedTest)
 
                 
 
@@ -177,6 +198,7 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
         print('DayInd = {}, Slot = {}'.format(dayInd, slotInd))
 
         if currentNumberOfClasses == NUMBER_OF_CLASSES:
+            print('Gotcha!')
             return True
 
         if slotInd == 5:
