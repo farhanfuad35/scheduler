@@ -25,7 +25,7 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
 
 
     def pickTeacher(dayInd, slotInd, course, teacherInd):
-        print('Teacher', teacherInd)
+        # print('Teacher', teacherInd)
         nonlocal CLASS_END
 
         if teacherInd == len(course.courseTeachers):
@@ -37,9 +37,6 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
         courseFinish = slot + datetime.timedelta(hours=course.duration)
 
         def proceed():
-            # DEBUG
-            print('Proceeding')
-
             if not course.isLabCourse:
                 return pickTeacher(dayInd, slotInd, course, teacherInd+1)
             else:
@@ -50,7 +47,6 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
 
         for teacherSlot in teacher.teacherSlots[dayInd]:
             if teacherSlot[0] <= slot and teacherSlot[1]>=courseFinish:
-                print('Returning', teacher.initial)
                 return teacher
 
         return proceed()
@@ -63,13 +59,13 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
         courseKeys = list(coursesList)
         course = coursesList[courseKeys[courseInd]]
 
-        print('Course', course.id)
+        # print('Course', course.id)
 
         def assignTeacher(teachersToBeAssigned):
             # Update the routine
 
             for t in teachersToBeAssigned:
-                print('Found Teacher:', t.initial)
+                # print('Found Teacher:', t.initial)
                 if course.isLabCourse:
                     lockTeacher[slotInd+2].append(t)
                 else:
@@ -81,7 +77,6 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
             
 
             for t in teachersToBeUnassigned:
-                print('Unassigning: day, slot, course, teacher', dayInd, slotInd, course.id, t.initial)
                 try:
                     if course.isLabCourse:
                         lockTeacher[slotInd+2].remove(t)
@@ -95,8 +90,6 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
 
 
         def teacherFound(teachersToBeAssigned):
-            print('Found Teacher')
-
             nonlocal currentNumberOfClasses
             nonlocal currentRoutineState
 
@@ -195,10 +188,11 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
                 
 
     def pickSlot(dayInd, slotInd):
-        print('DayInd = {}, Slot = {}'.format(dayInd, slotInd))
+        # print('DayInd = {}, Slot = {}'.format(dayInd, slotInd))
+
+        key = currentRoutineState + str(dayInd) + str(slotInd)
 
         if currentNumberOfClasses == NUMBER_OF_CLASSES:
-            print('Gotcha!')
             return True
 
         if slotInd == 5:
@@ -206,19 +200,23 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
         
         unlock(slotInd)
         
-        if not pickCourse(dayInd, slotInd, 0):
-            return pickSlot(dayInd, slotInd+1)
-        
+        if key in MEMO:
+            return False
         else:
-            return True
+            result = pickCourse(dayInd, slotInd, 0)
+            MEMO.append(key)
+            if result is False:
+                return pickSlot(dayInd, slotInd+1)
+            
+            else:
+                return True
 
     def pickDay(dayInd):
         key = currentRoutineState + str(dayInd)
-        print('Day', dayInd)
+        # print('Day', dayInd)
         unlockAll()
 
         if dayInd == 5:
-            print('No Day found. Returning False')
             return False
         
         if key not in MEMO:
