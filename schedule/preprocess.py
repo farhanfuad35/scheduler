@@ -17,8 +17,10 @@ SLOTS_PER_DAY = (
     )
 
 class Teacher:
-    def __init__(self, initial, teacherSlots, courses):
+    def __init__(self, initial, teacherSlots, courses, freeSlotHours, courseHours):
         self.initial = initial
+        self.totalSlotHours = freeSlotHours
+        self.totalCourseHours = courseHours
         self.name = None
         self.available = True
         self.courses = courses          # These are all course keys, not actual course
@@ -102,17 +104,16 @@ def schedule(book):
         for rec in timetable:
             initial = rec[0]
             teacherSlots = []
-            teacherSlots.append(convertToTime(rec[2]))
-            teacherSlots.append(convertToTime(rec[3]))
-            teacherSlots.append(convertToTime(rec[4]))
-            teacherSlots.append(convertToTime(rec[5]))
-            teacherSlots.append(convertToTime(rec[6]))
+            freeSlotHour = datetime.timedelta(0)
+            for day in range(2, 7):
+                [slot, freeSlotHourPerDay] = convertToTime(rec[day])
+                freeSlotHour = freeSlotHour + freeSlotHourPerDay
+                teacherSlots.append(slot)
 
-            courses = getTeacherCourses(book, initial)
-            teacher = Teacher(initial, teacherSlots, courses)
+            courses, courseHours = getTeacherCourses(book, initial)
+            teacher = Teacher(initial, teacherSlots, courses, freeSlotHour, courseHours)
 
             setCourseTeacher(teacher)
-
             teachersList[initial] = teacher
 
     def setCourseTeacher(teacher):
@@ -128,6 +129,7 @@ def schedule(book):
     def convertToTime(str):
         timeStrArr = str.split(';')
         ret = []
+        freeSlotHour = datetime.timedelta(hours=0)
         for t in timeStrArr:
             try:
                 startTime = t.split('-')[0]
@@ -135,10 +137,11 @@ def schedule(book):
                 endTime = t.split('-')[1]
                 endTime = datetime.datetime.strptime(endTime, '%I:%M%p')
                 ret.append([startTime, endTime])
+                freeSlotHour = freeSlotHour + (endTime - startTime)
             except ValueError:
-                return ret
+                pass
         
-        return ret
+        return ret, freeSlotHour
 
     # Convert courses to id. CSE 3201 would be converted into 320 (3: Year, 2: Semester, 0: No Section)
     # CSE 3102 Section 2 would be converted into 312 (3: Year, 1: Semester, 2: Section)
@@ -149,6 +152,9 @@ def schedule(book):
 
         sheet = book[1].get_array()
         teacherCourses = []
+
+        # counts how many hours it's going to take to take all the courses a particular teacher is assigned to take
+        courseHours = datetime.timedelta(0)
         for row in sheet:
             if row[0] == initial:
                 for i in range(1, len(row)):
@@ -173,9 +179,11 @@ def schedule(book):
 
                         if batchID not in batchesList.keys():
                             batchesList[batchID] = Batch(batchID)
+
+                        courseHours = courseHours + coursesList[courseID].duration * coursesList[courseID].weeklyClass
                 break
 
-        return teacherCourses
+        return teacherCourses, courseHours
 
 
     # def applyHeuristics():

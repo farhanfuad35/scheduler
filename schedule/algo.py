@@ -1,19 +1,16 @@
-# This method should return the final table
+# This method returns the final teachers Set which contains routines for each teacher
 import datetime
-
-# batchesList = {}
-# batchesList = {}
-# batchesList = {}
 
 # Parent Function
 def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLASSES):
     # Initialize all necessary fields
+
     # CONSTANTS
     MEMO = set()
     CLASS_START = datetime.datetime.strptime('08:30 AM', '%I:%M %p')
     CLASS_END = datetime.datetime.strptime('05:00 PM', '%I:%M %p')
 
-    # Keeps track of current routine state to avoid unnecessary duplicate recursion
+    # Keeps track of current routine state to avoid unnecessary duplicate recursion (Memoization)
     currentRoutineState = ''
 
     finalRoutine = []
@@ -74,8 +71,6 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
                 t.routine[dayInd][slotInd] = course
 
         def unAssignTeacher(teachersToBeUnassigned):
-            
-
             for t in teachersToBeUnassigned:
                 try:
                     if course.isLabCourse:
@@ -250,7 +245,9 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
         else:
             return False
 
-        
+    # ----------------
+    # HELPER FUNCTIONS
+    # ----------------       
 
     def init(finalRoutine):
         for i in range(5):
@@ -276,12 +273,25 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
     def generateBatchCode(courseID):
         return int(courseID/1000) * 10
 
+    # -------------
+    # OPTIMIZATIONS
+    # -------------
+
+    def teacherFreeHoursMoreThanCourseHours():
+        teacherKeys = list(teachersList)
+        for key in teacherKeys:
+            if teachersList[key].totalSlotHours < teachersList[key].totalCourseHours:
+                return False
+        return True
+
+    def preliminaryTest():
+        return teacherFreeHoursMoreThanCourseHours()
+
     # Function calls
 
     init(finalRoutine)
-    
-    if pickDay(0):
-        valid = True
+    if preliminaryTest():
+        valid = pickDay(0)
     else:
         valid = False
 
