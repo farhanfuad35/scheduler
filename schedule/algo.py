@@ -15,7 +15,7 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
 
     finalRoutine = []
     lockTeacher = [[], [], [], [], [], []]
-    lockBatch = [[], [], [], [], [], []]        # For each slot of the day
+    lockBatch = [[], [], [], [], [], []]        # For each slot of the day. Contains Batch ID, not Batch
     lockCourse = []
 
     currentNumberOfClasses = 0
@@ -103,6 +103,7 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
             # Handle Lab Course
             if course.isLabCourse:
                 lockBatch[slotInd+2].append(batch)
+                batchesList[batch].inLabClass = True
             else:
                 lockBatch[slotInd+1].append(batch)
 
@@ -135,6 +136,7 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
                 if course.isLabCourse:
                     try:
                         lockBatch[slotInd+2].remove(batch)
+                        batchesList[batch].inLabClass = False
                     except:
                         pass
                 else:
@@ -155,8 +157,15 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
         
         else:
             # If not possible, continue
+            batch = batchesList[generateBatchCode(course.id)]
+
+            # If the batch is currently unavailable but it's a lab course, then it may still be scheduled
+            # if the batch is actually busy in a lab class. Meaning current lab course is for
+            # a different section. What happens if it's not a different section? Then course.available becomes True
+            # and this batch is skipped anyway
             if course.doneClass == course.weeklyClass or \
-                not batchesList[generateBatchCode(course.id)].available or \
+                (not batch.available and not course.isLabCourse) or \
+                    (course.isLabCourse and not batch.available and not batch.inLabClass) or \
                     not course.available:
                 result = pickCourse(dayInd, slotInd, courseInd+1)
 
@@ -265,6 +274,7 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
     def unlock(slotInd):
         for b in lockBatch[slotInd]:
             batchesList[b].available = True
+            batchesList[b].inLabClass = False
         lockBatch[slotInd].clear()
         for t in lockTeacher[slotInd]:
             t.available = True

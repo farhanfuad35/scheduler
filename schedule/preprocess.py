@@ -52,6 +52,7 @@ class Batch:
         self.free = []                         # A 2D array. free[2][3] = free at Tuesday (2) at 2:00 PM (slot: 3)
         self.id = id
         self.available = True
+        self.inLabClass = False
         
         for j in range(0, 5):
             slots = []
