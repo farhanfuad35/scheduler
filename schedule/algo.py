@@ -9,7 +9,7 @@ import datetime
 def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLASSES):
     # Initialize all necessary fields
     # CONSTANTS
-    MEMO = []
+    MEMO = set()
     CLASS_START = datetime.datetime.strptime('08:30 AM', '%I:%M %p')
     CLASS_END = datetime.datetime.strptime('05:00 PM', '%I:%M %p')
 
@@ -34,7 +34,7 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
         # check if teacher can take class on this slotInd. True if yes, Flase if no
         teacher = course.courseTeachers[teacherInd]
         slot = SLOTS_PER_DAY[slotInd]
-        courseFinish = slot + datetime.timedelta(hours=course.duration)
+        courseFinish = slot + course.duration
 
         def proceed():
             if not course.isLabCourse:
@@ -115,7 +115,7 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
             currentNumberOfClasses = currentNumberOfClasses + 1
 
             # Update Current Routine State
-            adderString = str(dayInd) + str(slotInd) + str(courseInd)
+            adderString = 'D' + str(dayInd) + 'S' + str(slotInd) + 'C' + str(courseInd)
             currentRoutineState = currentRoutineState + adderString
 
             # Return True if it works
@@ -152,45 +152,56 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
                 return False
 
 
-        # If not possible, continue
-        if course.doneClass == course.weeklyClass or \
-            not batchesList[generateBatchCode(course.id)].available or \
-                not course.available:
-            return pickCourse(dayInd, slotInd, courseInd+1)
-
-        # If lab course, assign multiple teachers together if needed
-
-        teachersToBeAssignedTest = []
-
-        if course.isLabCourse:
-            possible = True
-            
-            for i in range(len(course.courseTeachers)):
-                teacher = pickTeacher(dayInd, slotInd, course, i)
-                if teacher != None:
-                    teachersToBeAssignedTest.append(teacher)
-                else:
-                    possible = False
-                    break
-            
-            if possible:
-                return teacherFound(teachersToBeAssignedTest)
-            else:
-                return pickCourse(dayInd, slotInd, courseInd+1)
+        # Parent Function Starts Here
+        key = currentRoutineState + 'D' + str(dayInd) + 'S' + str(slotInd) + 'C' + str(courseInd)
+        
+        if key in MEMO:
+            return False
+        
         else:
-            teacher =  pickTeacher(dayInd, slotInd, course, 0)
-            if teacher == None:
-                return pickCourse(dayInd, slotInd, courseInd+1)
+            # If not possible, continue
+            if course.doneClass == course.weeklyClass or \
+                not batchesList[generateBatchCode(course.id)].available or \
+                    not course.available:
+                result = pickCourse(dayInd, slotInd, courseInd+1)
+
+            # If lab course, assign multiple teachers together if needed
+
+            elif course.isLabCourse:
+                teachersToBeAssignedTest = []
+                possible = True
+                
+                for i in range(len(course.courseTeachers)):
+                    teacher = pickTeacher(dayInd, slotInd, course, i)
+                    if teacher != None:
+                        teachersToBeAssignedTest.append(teacher)
+                    else:
+                        possible = False
+                        break
+                
+                if possible:
+                    result = teacherFound(teachersToBeAssignedTest)
+                else:
+                    result = pickCourse(dayInd, slotInd, courseInd+1)
             else:
-                teachersToBeAssignedTest.append(teacher)
-                return teacherFound(teachersToBeAssignedTest)
+                teachersToBeAssignedTest = []
+                teacher =  pickTeacher(dayInd, slotInd, course, 0)
+                if teacher == None:
+                    result = pickCourse(dayInd, slotInd, courseInd+1)
+                else:
+                    teachersToBeAssignedTest.append(teacher)
+                    result = teacherFound(teachersToBeAssignedTest)
+            
+            MEMO.add(key)
+
+            return result
 
                 
 
     def pickSlot(dayInd, slotInd):
         # print('DayInd = {}, Slot = {}'.format(dayInd, slotInd))
 
-        key = currentRoutineState + str(dayInd) + str(slotInd)
+        key = currentRoutineState + 'D' + str(dayInd) + 'S' + str(slotInd)
 
         if currentNumberOfClasses == NUMBER_OF_CLASSES:
             return True
@@ -204,7 +215,7 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
             return False
         else:
             result = pickCourse(dayInd, slotInd, 0)
-            MEMO.append(key)
+            MEMO.add(key)
             if result is False:
                 return pickSlot(dayInd, slotInd+1)
             
@@ -212,8 +223,8 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
                 return True
 
     def pickDay(dayInd):
-        key = currentRoutineState + str(dayInd)
-        # print('Day', dayInd)
+        key = currentRoutineState + 'D' + str(dayInd)
+        # print('Day', dayInd, 'Routine State: ', currentRoutineState)
         unlockAll()
 
         if dayInd == 5:
@@ -221,7 +232,7 @@ def runAlgo(batchesList, coursesList, teachersList, SLOTS_PER_DAY, NUMBER_OF_CLA
         
         if key not in MEMO:
             result = pickSlot(dayInd, 0)
-            MEMO.append(key)
+            MEMO.add(key)
             if result is False:
                 return pickDay(dayInd+1)
             else:

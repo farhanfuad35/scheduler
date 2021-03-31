@@ -62,7 +62,7 @@ class Course:
         self.id = id
         self.name = name
         self.credit = credit
-        self.duration = 1.5
+        self.duration = datetime.timedelta(hours=1.5)
         self.doneClass = 0
         self.isLabCourse = False
         self.courseTeachers = []
@@ -78,7 +78,7 @@ class Course:
         if int(id/100)%10 == 1:
             self.isLabCourse = True
             self.weeklyClass = 1
-            self.duration = 3
+            self.duration = datetime.timedelta(hours=3)
 
 
     def __str__(self):
