@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block page_body %}
-
+    <br><br>
   <!-- ======= Hero Section ======= -->
   <section id="hero" class="hero d-flex align-items-center">
 
@@ -15,8 +15,7 @@
             <div class="text-center pt-2 text-lg-start">
                 <form method="POST" action="" enctype="multipart/form-data">  {% csrf_token %}
                     {{form.file}}
-                    <input type="submit" value="Upload" class="btn-get-started scrollto d-inline-flex align-items-center justify-content-center align-self-center">
-                    <i class="bi bi-arrow-right"></i>       
+                    <input type="submit" value="Upload" class="btn-get-started scrollto d-inline-flex align-items-center justify-content-center align-self-center">  
                 </form>
               </a>
             </div>
@@ -31,11 +30,4 @@
   </section><!-- End Hero -->
 
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
-
-    <script src="{% static 'upload/assets/aos/aos.js' %}"></script>
-    <script src="{% static 'upload/assets/glightbox/js/glightbox.min.js' %}"></script>
-    <script src="{% static 'upload/assets/swiper/swiper-bundle.min.js' %}"></script>
-
-  <!-- Template Main JS File -->
-  <script src="{% static 'upload/assets/js/main.js' %}"></script>
 {% endblock %}

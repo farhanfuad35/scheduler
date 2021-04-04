@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block page_body %}
+{% load static %}
+<br><br>
+<div class="pt-5 mx-auto" style="width: 50%">
+    <ul class="list-group">
+    <li class="list-group-item"><a href="{% static 'upload/input/input.xlsx' %}">Sheet 1 (Default)</a></li>
+    <li class="list-group-item"><a href="{% static 'upload/input/input_multi_course.xlsx' %}">Sheet 2 (More Courses)</a></li>
+    <li class="list-group-item"><a href="{% static 'upload/input/input_multi_course2.xlsx' %}">Sheet 3 (More Courses)</a></li>
+    <li class="list-group-item"><a href="{% static 'upload/input/input_no_labtime.xlsx' %}">Sheet 4 (Invalid Constraint. Not enough free time for lab classes)</a></li>
+    <li class="list-group-item"><a href="{% static 'upload/input/input_no_labtime2.xlsx' %}">Sheet 4 (Invalid Constraint. Not enough free time for lab classes)</a></li>
+    </ul>
+</div>
+{% endblock %}

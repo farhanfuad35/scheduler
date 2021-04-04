@@ -26,4 +26,6 @@ class ScheduleWizard(SessionWizardView):
         # Do something with the form
         return HttpResponseRedirect('/')
 
+def sampleInput(request):
+    return render(request, 'sample.html')
         
