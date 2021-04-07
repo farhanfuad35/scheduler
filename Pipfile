@@ -1,0 +1,24 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+django = "*"
+python-dotenv = "*"
+django-formtools = "*"
+django-bootstrap-datepicker-plus = "*"
+django-bootstrap4 = "*"
+xlrd = "*"
+django-excel = "*"
+pyexcel-xls = "*"
+pyexcel-xlsx = "*"
+psycopg2 = "*"
+django-heroku = "*"
+gunicorn = "*"
+whitenoise = "*"
+
+[requires]
+python_version = "3.8"
