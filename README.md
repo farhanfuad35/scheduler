@@ -13,12 +13,14 @@ If you want to run the server locally:
   - Create a python virtual environment in the project directory <br>
         ```pipenv shell```
   - Install required packages <br>
-        `pipenv install`
-  - Make migrations and migrate
-        `python manage.py makemigrations`
-        `python manage.py migrate`
-  - Run server
-        `python manage.py runserver`
+`pipenv install`
+  - Make migrations and migrate <br>
+  ```
+  python manage.py makemigrations
+  python manage.py migrate
+  ```
+  - Run server <br>
+  ```python manage.py runserver```
 
 ### Technical Details
 - **Language:** Python 3.8.5
