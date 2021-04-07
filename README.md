@@ -25,4 +25,4 @@ If you want to run the server locally:
 ### Technical Details
 - **Language:** Python 3.8.5
 - **Backend Framework:** Django 3.1.5
-- **Frontend:** Bootstrap 4 (Template collected from online)
+- **Frontend:** Bootstrap 4 (Template collected from the web)
